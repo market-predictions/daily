@@ -28,7 +28,7 @@ jobs:
         env:
           TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
         run: |
-          python "fxbias-backtest-calibration-8pairs-20days-mastertable-v5.4.1.py"
+          python "fxbias-backtest-calibration-8pairs-20days-mastertable-v5.5.py"
 
       - name: Upload outputs
         uses: actions/upload-artifact@v4
