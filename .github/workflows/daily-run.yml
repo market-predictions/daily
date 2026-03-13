@@ -5,6 +5,9 @@ on:
     - cron: "15 5 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   run-script:
     runs-on: ubuntu-latest
@@ -30,13 +33,29 @@ jobs:
         run: |
           python "fxbias-backtest-calibration-8pairs-20days-mastertable-v5.5.py"
 
-      - name: Upload outputs
-        uses: actions/upload-artifact@v4
+      - name: Find newest zip
+        id: find_zip
+        run: |
+          ZIP_FILE=$(find . -type f -name "*.zip" | sort | tail -n 1)
+          echo "zip_file=$ZIP_FILE" >> $GITHUB_OUTPUT
+          echo "Found zip: $ZIP_FILE"
+
+      - name: Create tag name
+        id: tag
+        run: |
+          echo "tag_name=daily-$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Publish release with zip
+        uses: softprops/action-gh-release@v2
         with:
-          name: daily-output
-          path: |
-            *.pdf
-            *.zip
-            */
-          if-no-files-found: warn
-          retention-days: 7
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: Daily run ${{ steps.tag.outputs.tag_name }}
+          files: ${{ steps.find_zip.outputs.zip_file }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+
